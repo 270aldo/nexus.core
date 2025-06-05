@@ -7,6 +7,10 @@ from fastapi.requests import HTTPConnection
 from jwt import PyJWKClient
 from pydantic import BaseModel
 from starlette.requests import Request
+from app.logger import get_logger
+
+
+logger = get_logger(__name__)
 
 
 class AuthConfig(BaseModel):
@@ -61,9 +65,9 @@ def get_authorized_user(
 
         if user is not None:
             return user
-        print("Request authentication returned no user")
+        logger.info("Request authentication returned no user")
     except Exception as e:
-        print(f"Request authentication failed: {e}")
+        logger.exception("Request authentication failed: %s", e)
 
     if isinstance(request, WebSocket):
         raise WebSocketException(
@@ -111,7 +115,7 @@ def authorize_websocket(
             break
 
     if not token:
-        print(f"Missing bearer {prefix}.<token> in protocols")
+        logger.warning("Missing bearer %s.<token> in protocols", prefix)
         return None
 
     return authorize_token(token, auth_config)
@@ -123,12 +127,12 @@ def authorize_request(
 ) -> User | None:
     auth_header = request.headers.get(auth_config.header)
     if not auth_header:
-        print(f"Missing header '{auth_config.header}'")
+        logger.warning("Missing header '%s'", auth_config.header)
         return None
 
     token = auth_header.startswith("Bearer ") and auth_header[7:]
     if not token:
-        print(f"Missing bearer token in '{auth_config.header}'")
+        logger.warning("Missing bearer token in '%s'", auth_config.header)
         return None
 
     return authorize_token(token, auth_config)
@@ -146,7 +150,7 @@ def authorize_token(
         try:
             key, alg = get_signing_key(jwks_url, token)
         except Exception as e:
-            print(f"Failed to get signing key {e}")
+            logger.error("Failed to get signing key %s", e)
             continue
 
         try:
@@ -157,13 +161,13 @@ def authorize_token(
                 audience=audience,
             )
         except jwt.PyJWTError as e:
-            print(f"Failed to decode and validate token {e}")
+            logger.error("Failed to decode and validate token %s", e)
             continue
 
     try:
         user = User.model_validate(payload)
-        print(f"User {user.sub} authenticated")
+        logger.info("User %s authenticated", user.sub)
         return user
     except Exception as e:
-        print(f"Failed to parse token payload {e}")
+        logger.error("Failed to parse token payload %s", e)
         return None

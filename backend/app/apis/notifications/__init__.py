@@ -5,9 +5,11 @@ from datetime import datetime
 import uuid
 import re
 import databutton as db
+from app.logger import get_logger
 
 # Create Notifications router
 router = APIRouter()
+logger = get_logger(__name__)
 
 # Helper function for sanitizing storage keys
 def sanitize_storage_key(key: str) -> str:
@@ -52,7 +54,7 @@ def get_notifications_storage():
             db.storage.json.put("notifications", notifications)
         return notifications
     except Exception as e:
-        print(f"Error getting notifications storage: {str(e)}")
+        logger.error("Error getting notifications storage: %s", e)
         return {"notifications": [], "last_updated": datetime.now().isoformat()}
 
 def save_notifications_storage(notifications_data):
@@ -107,7 +109,7 @@ def create_notification(notification: NotificationCreate):
             message="Notification created successfully"
         )
     except Exception as e:
-        print(f"Error creating notification: {str(e)}")
+        logger.exception("Error creating notification: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/notifications/user/{user_id}", response_model=NotificationResponse)
@@ -154,7 +156,7 @@ def get_user_notifications(
             message=f"Retrieved {len(paginated_notifications)} notifications for user {user_id}"
         )
     except Exception as e:
-        print(f"Error getting user notifications: {str(e)}")
+        logger.exception("Error getting user notifications: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.patch("/notifications/{notification_id}/read", response_model=NotificationResponse)
@@ -192,7 +194,7 @@ def mark_notification_read(notification_id: str):
     except HTTPException:
         raise
     except Exception as e:
-        print(f"Error marking notification as read: {str(e)}")
+        logger.exception("Error marking notification as read: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.patch("/notifications/user/{user_id}/read-all", response_model=NotificationResponse)
@@ -224,7 +226,7 @@ def mark_all_notifications_read(user_id: str):
             message=f"Marked {count} notifications as read for user {user_id}"
         )
     except Exception as e:
-        print(f"Error marking all notifications as read: {str(e)}")
+        logger.exception("Error marking all notifications as read: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.delete("/notifications/{notification_id}", response_model=NotificationResponse)
@@ -261,5 +263,5 @@ def delete_notification(notification_id: str):
     except HTTPException:
         raise
     except Exception as e:
-        print(f"Error deleting notification: {str(e)}")
+        logger.exception("Error deleting notification: %s", e)
         raise HTTPException(status_code=500, detail=str(e))

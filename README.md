@@ -27,3 +27,24 @@ make run-frontend
 The backend server runs on port 8000 and the frontend development server runs on port 5173. The frontend Vite server proxies API requests to the backend on port 8000.
 
 Visit <http://localhost:5173> to view the application.
+
+## Logging
+
+The backend uses Python's built-in `logging` module. Log output is configured in
+`backend/app/logger.py`. The log level can be changed with the environment
+variable `LOG_LEVEL` (default: `INFO`).
+
+In development, simply run:
+
+```bash
+make run-backend
+```
+
+Logs will appear in the terminal. In a production environment you can redirect
+the output to a file:
+
+```bash
+LOG_LEVEL=INFO nohup backend/run.sh > backend.log 2>&1 &
+```
+
+Use tools like `tail -f backend.log` to inspect the logs.
