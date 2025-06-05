@@ -27,3 +27,15 @@ make run-frontend
 The backend server runs on port 8000 and the frontend development server runs on port 5173. The frontend Vite server proxies API requests to the backend on port 8000.
 
 Visit <http://localhost:5173> to view the application.
+
+## Dependency Management
+
+Lock files `backend/uv.lock` and `frontend/yarn.lock` pin exact dependency
+versions. Regenerate them periodically with:
+
+```bash
+cd backend && uv lock
+cd ../frontend && yarn install
+```
+
+Commit the updated lock files to keep environments reproducible.
