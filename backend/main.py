@@ -3,18 +3,24 @@ import pathlib
 import json
 import dotenv
 from fastapi import FastAPI, APIRouter, Depends
+from app.logger import get_logger
 
 dotenv.load_dotenv()
 
 from databutton_app.mw.auth_mw import AuthConfig, get_authorized_user
 
 
+logger = get_logger(__name__)
+
+
 def get_router_config() -> dict:
     try:
         # Note: This file is not available to the agent
-        cfg = json.loads(open("routers.json").read())
-    except:
-        return False
+        with open("routers.json", "r") as fh:
+            cfg = json.load(fh)
+    except (OSError, json.JSONDecodeError) as e:
+        logger.error("Failed to load router configuration: %s", e)
+        return {}
     return cfg
 
 
@@ -41,7 +47,7 @@ def import_api_routers() -> APIRouter:
     api_module_prefix = "app.apis."
 
     for name in api_names:
-        print(f"Importing API: {name}")
+        logger.info("Importing API: %s", name)
         try:
             api_module = __import__(api_module_prefix + name, fromlist=[name])
             api_router = getattr(api_module, "router", None)
@@ -55,10 +61,10 @@ def import_api_routers() -> APIRouter:
                     ),
                 )
         except Exception as e:
-            print(e)
+            logger.exception("Failed to import API '%s': %s", name, e)
             continue
 
-    print(routes.routes)
+    logger.debug("Registered routes: %s", routes.routes)
 
     return routes
 
@@ -82,15 +88,15 @@ def create_app() -> FastAPI:
     for route in app.routes:
         if hasattr(route, "methods"):
             for method in route.methods:
-                print(f"{method} {route.path}")
+                logger.debug("%s %s", method, route.path)
 
     firebase_config = get_firebase_config()
 
     if firebase_config is None:
-        print("No firebase config found")
+        logger.warning("No firebase config found")
         app.state.auth_config = None
     else:
-        print("Firebase config found")
+        logger.info("Firebase config found")
         auth_config = {
             "jwks_url": "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com",
             "audience": firebase_config["projectId"],
