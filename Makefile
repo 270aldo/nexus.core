@@ -14,6 +14,22 @@ run-backend:
 	cd backend && ./run.sh
 
 run-frontend:
-	cd frontend && ./run.sh
+        cd frontend && ./run.sh
+
+format-python:
+        black backend
+
+lint-python:
+        flake8
+
+format-frontend:
+        cd frontend && yarn run format
+
+lint-frontend:
+        cd frontend && yarn run lint
+
+format: format-python format-frontend
+
+lint: lint-python lint-frontend
 
 .DEFAULT_GOAL := install
