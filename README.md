@@ -27,3 +27,12 @@ make run-frontend
 The backend server runs on port 8000 and the frontend development server runs on port 5173. The frontend Vite server proxies API requests to the backend on port 8000.
 
 Visit <http://localhost:5173> to view the application.
+
+## CI/CD
+
+The project uses [GitHub Actions](https://github.com/features/actions) to run lint
+checks, execute tests and build the frontend on every pull request. The
+configuration lives in `.github/workflows/ci.yml`. Built artifacts are uploaded
+for internal beta testing when changes are merged to `main`.
+
+For more details see [docs/CI_CD.md](docs/CI_CD.md).
