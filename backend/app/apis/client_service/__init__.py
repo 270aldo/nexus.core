@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Path, Query, Body
+from fastapi import APIRouter, HTTPException, Path, Query, Body, Response
 from pydantic import BaseModel, EmailStr, Field, UUID4
 from typing import Optional, List, Dict, Any, Union
 from datetime import datetime, date
@@ -7,7 +7,7 @@ import databutton as db
 import json
 import uuid
 
-router = APIRouter(prefix="/client-service", tags=["client-service"])
+router = APIRouter(prefix="/clients", tags=["Clients"])
 
 # Helper functions for direct Supabase access with admin rights
 def get_supabase_admin_credentials():
@@ -84,8 +84,19 @@ class ClientCreate(BaseModel):
     goals: Optional[List[str]] = None
     payment_status: Optional[str] = None
 
+class ClientUpdate(BaseModel):
+    type: Optional[str] = None
+    name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    phone: Optional[str] = None
+    birth_date: Optional[str] = None  # ISO format YYYY-MM-DD
+    status: Optional[str] = None
+    goals: Optional[List[str]] = None
+    payment_status: Optional[str] = None
+
+
 # API Endpoints for Admin Service
-@router.post("/clients", status_code=201)
+@router.post("", status_code=201, operation_id="create_client")
 def create_client_admin(client: ClientCreate):
     """Create a new client with admin privileges to bypass RLS"""
     try:
@@ -110,7 +121,7 @@ def create_client_admin(client: ClientCreate):
             raise e
         raise HTTPException(status_code=500, detail=f"Error creating client: {str(e)}")
 
-@router.get("/clients")
+@router.get("", operation_id="search_clients")
 def search_clients_admin(q: Optional[str] = None, limit: int = 10, offset: int = 0):
     """Search clients with admin privileges"""
     try:
@@ -130,16 +141,22 @@ def search_clients_admin(q: Optional[str] = None, limit: int = 10, offset: int =
         
         # Get total count first
         count_params = {"select": "count"}
-        count_result = supabase_admin_request("GET", f"/rest/v1/clients?{filter_query}", params=count_params)
+        if filter_query: # Add existing filters to count query if they exist
+            count_path = f"/rest/v1/clients?{filter_query}"
+        else:
+            count_path = "/rest/v1/clients"
+
+        count_result = supabase_admin_request("GET", count_path, params=count_params)
         total_count = 0
-        if count_result and len(count_result) > 0:
+        if count_result and isinstance(count_result, list) and len(count_result) > 0 : # Check if list and not empty
+            # Supabase returns count in a list of dictionaries e.g. [{'count': 10}]
             total_count = count_result[0].get("count", 0)
         
         # Get the data
         result = supabase_admin_request("GET", path, params=params)
         
         return {
-            "clients": result,
+            "clients": result if result else [], # Ensure clients is always a list
             "total": total_count
         }
     except Exception as e:
@@ -147,7 +164,7 @@ def search_clients_admin(q: Optional[str] = None, limit: int = 10, offset: int =
             raise e
         raise HTTPException(status_code=500, detail=f"Error searching clients: {str(e)}")
 
-@router.get("/clients/{client_id}")
+@router.get("/{client_id}", operation_id="get_client_by_id")
 def get_client_by_id_admin(client_id: str = Path(..., description="The ID of the client to get")):
     """Get a client by ID with admin privileges"""
     try:
@@ -156,11 +173,60 @@ def get_client_by_id_admin(client_id: str = Path(..., description="The ID of the
             f"/rest/v1/clients?id=eq.{client_id}&select=*",
         )
         
-        if not result or len(result) == 0:
+        if not result or (isinstance(result, list) and len(result) == 0):
             raise HTTPException(status_code=404, detail=f"Client with ID {client_id} not found")
             
-        return result[0]
+        return result[0] if isinstance(result, list) else result
     except Exception as e:
         if isinstance(e, HTTPException):
             raise e
         raise HTTPException(status_code=500, detail=f"Error getting client: {str(e)}")
+
+@router.put("/{client_id}", operation_id="update_client")
+def update_client(client_id: str = Path(..., description="The ID of the client to update"), client_update: ClientUpdate = Body(...)):
+    """Update an existing client"""
+    try:
+        # Prepare client data, excluding unset fields
+        client_data = client_update.model_dump(exclude_unset=True)
+
+        if not client_data:
+            raise HTTPException(status_code=400, detail="No fields to update")
+
+        result = supabase_admin_request(
+            "PATCH",
+            f"/rest/v1/clients?id=eq.{client_id}",
+            data=client_data
+        )
+
+        if not result or (isinstance(result, list) and len(result) == 0):
+            raise HTTPException(status_code=404, detail=f"Client with ID {client_id} not found or no changes made")
+
+        return result[0] if isinstance(result, list) else result
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=500, detail=f"Error updating client: {str(e)}")
+
+@router.delete("/{client_id}", status_code=204, operation_id="delete_client")
+def delete_client(client_id: str = Path(..., description="The ID of the client to delete")):
+    """Delete a client by ID"""
+    try:
+        # First, check if the client exists to provide a 404 if not.
+        # Supabase DELETE doesn't return an error if the record doesn't exist with `Prefer: return=representation`
+        # So we do a GET first.
+        get_path = f"/rest/v1/clients?id=eq.{client_id}&select=id"
+        existing_client = supabase_admin_request("GET", get_path)
+
+        if not existing_client or len(existing_client) == 0:
+            raise HTTPException(status_code=404, detail=f"Client with ID {client_id} not found")
+
+        supabase_admin_request(
+            "DELETE",
+            f"/rest/v1/clients?id=eq.{client_id}"
+        )
+        # No need to return content, FastAPI will handle 204 No Content response
+        return Response(status_code=204)
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=500, detail=f"Error deleting client: {str(e)}")
