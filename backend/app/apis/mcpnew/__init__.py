@@ -4,6 +4,7 @@ from typing import List, Optional, Dict, Any, Union
 from datetime import date, datetime, timedelta
 from uuid import UUID
 import functools
+from backend.app.apis.supabase_client import get_supabase_client
 
 # Create main MCP router with unique paths
 router = APIRouter()
@@ -108,23 +109,39 @@ def mcpnew_search_clients(request: ClientSearchRequest):
         "List all active LONGEVITY clients"
     """
     try:
-        # Mock clients data
-        clients = [
-            {"id": "abc123", "name": "John Doe", "email": "john@example.com", "type": "PRIME", "status": "active"},
-            {"id": "def456", "name": "Jane Smith", "email": "jane@example.com", "type": "LONGEVITY", "status": "active"},
-        ]
+        supabase = get_supabase_client()
+
+        query_builder = supabase.table("clients").select("*", count="exact")
         
-        # Apply filters
+        if request.query:
+            query_builder = query_builder.or_(f"name.ilike.%{request.query}%,email.ilike.%{request.query}%")
+
         if request.client_type:
-            clients = [c for c in clients if c["type"] == request.client_type]
+            query_builder = query_builder.eq("type", request.client_type.upper())
+
+        query_builder = query_builder.limit(request.limit or 20)
+
+        response = query_builder.execute()
+
+        if response.data:
+            return {
+                "success": True,
+                "data": {"clients": response.data, "total": response.count},
+                "meta": {}
+            }
+        else:
+            # Log error here if possible (e.g., using a logger library)
+            # print(f"Error fetching clients: {response.error}")
+            return {
+                "success": False,
+                "data": {"clients": [], "total": 0},
+                "meta": {"error": "Failed to retrieve clients or no clients found."}
+            }
             
-        return {
-            "success": True,
-            "data": {"clients": clients, "total": len(clients)},
-            "meta": {}
-        }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        # Log error here if possible
+        # print(f"An exception occurred: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
 @router.post("/mcp/clients/get", tags=["mcp"])
 @cache_result(ttl_seconds=60)  # Cache client details for 1 minute
@@ -148,24 +165,26 @@ def mcpnew_get_client_details(request: ClientDetailsRequest):
         "What programs is Michael currently enrolled in?"
     """
     try:
-        # Mock client data
-        client = {
-            "id": request.client_id,
-            "name": "John Doe",
-            "email": "john@example.com",
-            "type": "PRIME",
-            "status": "active",
-            "goals": {"primary": "strength", "secondary": "fat_loss"},
-            "active_programs": [{"id": "prog123", "name": "Hypertrophy Phase 1", "progress": 0.65}]
-        }
+        supabase = get_supabase_client()
         
-        return {
-            "success": True,
-            "data": {"profile": client},
-            "meta": {}
-        }
+        # TODO: Fetch related data (programs, nutrition, progress) in a subsequent update.
+        response = supabase.table("clients").select("*").eq("id", request.client_id).maybe_single().execute()
+
+        if response.data:
+            return {
+                "success": True,
+                "data": {"profile": response.data},
+                "meta": {}
+            }
+        else:
+            raise HTTPException(status_code=404, detail=f"Client with ID {request.client_id} not found")
+
+    except HTTPException as http_exc:
+        raise http_exc
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error retrieving client details: {str(e)}")
+        # Log error here if possible
+        # print(f"An exception occurred: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"An error occurred while fetching client details: {str(e)}")
 
 @router.post("/mcp/clients/add", tags=["mcp"])
 def mcpnew_add_client(request: AddClientRequest):
@@ -301,29 +320,42 @@ def mcpnew_get_progress_history(request: ProgressHistoryRequest):
         "What progress has Sarah made on her measurements?"
     """
     try:
-        # Mock progress data
-        progress = {
-            "records": [
-                {"date": "2023-04-01", "type": "weight", "value": 84.2},
-                {"date": "2023-03-15", "type": "weight", "value": 84.8},
-                {"date": "2023-03-01", "type": "weight", "value": 85.5}
-            ],
-            "summary": {
-                "weight": {"start": 85.5, "current": 84.2, "change": -1.3}
-            }
-        }
+        supabase = get_supabase_client()
+
+        days_to_filter = request.days if request.days and request.days > 0 else 30
+        start_date = (datetime.now() - timedelta(days=days_to_filter)).isoformat()
+
+        query_builder = supabase.table("progress_records").select("*")
+        query_builder = query_builder.eq("client_id", request.client_id)
+        query_builder = query_builder.gte("date", start_date) # Assumes 'date' column stores ISO format string or timestamp
         
-        # Filter by type if requested
         if request.record_type:
-            progress["records"] = [r for r in progress["records"] if r["type"] == request.record_type]
+            query_builder = query_builder.eq("type", request.record_type) # Assumes 'type' column for record type
+
+        query_builder = query_builder.order("date", desc=True)
+
+        response = query_builder.execute()
+
+        # TODO: Implement a more complex summary based on the retrieved records.
+        if response.data:
+            return {
+                "success": True,
+                "data": {"records": response.data, "summary": {}}, # Summary is kept empty for now
+                "meta": {}
+            }
+        else:
+            # Log error here if possible (e.g., using a logger library)
+            # print(f"Error fetching progress history: {response.error}")
+            return {
+                "success": False,
+                "data": {"records": [], "summary": {}},
+                "meta": {"error": "Failed to retrieve progress history or no records found."}
+            }
             
-        return {
-            "success": True,
-            "data": progress,
-            "meta": {}
-        }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        # Log error here if possible
+        # print(f"An exception occurred: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"An error occurred while fetching progress history: {str(e)}")
 
 # ======== Analytics Endpoints ========
 
@@ -348,43 +380,67 @@ def mcpnew_get_client_adherence_metrics2(request: AdherenceMetricsRequest):
         "Show me Sarah's training compliance over the last month"
         "Which days of the week does Michael have the lowest nutrition adherence?"
     """
+    # TODO: This is a Phase 1 implementation. It assumes a 'workout_logs' table with
+    # 'client_id' (UUID), 'date' (timestamp/date), and 'completed_status' (boolean) columns.
+    # Trend and breakdowns are not yet implemented. Nutrition/recovery adherence not included.
     try:
-        # Mock adherence data
-        adherence = {
-            "summary": {
-                "overall": 0.85,
-                "training": 0.90,
-                "nutrition": 0.82,
-                "recovery": 0.78
-            },
-            "trend": [
-                {"week": "2023-W12", "value": 0.82},
-                {"week": "2023-W13", "value": 0.85},
-                {"week": "2023-W14", "value": 0.87}
-            ]
-        }
+        supabase = get_supabase_client()
+
+        if request.date_range and request.date_range.get('start_date') and request.date_range.get('end_date'):
+            try:
+                start_date = datetime.fromisoformat(request.date_range['start_date'])
+                end_date = datetime.fromisoformat(request.date_range['end_date'])
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid date format in date_range. Use ISO format YYYY-MM-DD.")
+        else:
+            end_date = datetime.now()
+            start_date = end_date - timedelta(days=30)
+
+        query_builder = supabase.table("workout_logs").select("id, date, completed_status", count="exact")
+        query_builder = query_builder.eq("client_id", request.client_id)
+        query_builder = query_builder.gte("date", start_date.isoformat())
+        query_builder = query_builder.lte("date", end_date.isoformat())
         
-        # Include breakdowns if requested
-        if request.include_breakdowns:
-            adherence["breakdowns"] = {
-                "by_day": {
-                    "monday": 0.92,
-                    "tuesday": 0.88,
-                    "wednesday": 0.90,
-                    "thursday": 0.85,
-                    "friday": 0.78,
-                    "saturday": 0.82,
-                    "sunday": 0.75
-                }
+        response = query_builder.execute()
+
+        if response.data is not None: # Check for data presence, could be an empty list
+            total_logs = response.count
+            completed_logs = len([log for log in response.data if log.get('completed_status') == True])
+            adherence_rate = (completed_logs / total_logs) * 100 if total_logs > 0 else 0
+
+            return {
+                "success": True,
+                "data": {
+                    "summary": {
+                        "overall_adherence_percentage": round(adherence_rate, 2),
+                        "completed_workouts": completed_logs,
+                        "total_logged_workouts": total_logs,
+                        "period_start_date": start_date.isoformat(),
+                        "period_end_date": end_date.isoformat()
+                    },
+                    "trend": [], # Kept empty for Phase 1
+                    "breakdowns": {} # Kept empty for Phase 1
+                },
+                "meta": {}
             }
+        else:
+            # This handles cases where response.data is None (e.g. error) or empty list for count
+            error_message = "Failed to retrieve adherence metrics or no workout logs found for the client."
+            if hasattr(response, 'error') and response.error:
+                error_message = f"Failed to retrieve adherence metrics: {response.error.message}"
             
-        return {
-            "success": True,
-            "data": adherence,
-            "meta": {}
-        }
+            return {
+                "success": False,
+                "data": {"summary": {}, "trend": [], "breakdowns": {}},
+                "meta": {"error": error_message}
+            }
+
+    except HTTPException as http_exc:
+        raise http_exc
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        # Log error here if possible
+        # print(f"An exception occurred: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"An error occurred while calculating adherence metrics: {str(e)}")
 
 @router.post("/mcp/analytics/effectiveness2", tags=["mcp"])
 @cache_result(ttl_seconds=600)  # Cache program effectiveness for 10 minutes
@@ -407,37 +463,68 @@ def mcpnew_get_program_effectiveness2(request: ProgramEffectivenessRequest):
         "What's the client satisfaction rate for the PRIME Strength program?"
         "Compare the effectiveness of the LONGEVITY Mobility program to average"
     """
+    # TODO: Phase 1 Simplification:
+    # - Assumes 'client_program_assignments' table with 'client_id', 'program_id'.
+    # - Assumes 'progress_records' table with 'client_id', 'date', 'value', 'record_type'.
+    # - Hardcodes 'weight' as the sample metric.
+    # - Output is basic and lacks sophisticated analysis or comparisons.
     try:
-        # Mock effectiveness data
-        effectiveness = {
-            "program_id": request.program_id,
-            "metrics": {
-                "strength_gain": 0.12,
-                "adherence": 0.85,
-                "satisfaction": 0.90,
-                "injury_rate": 0.02
-            },
-            "comparisons": {
-                "to_previous": 0.08,
-                "to_average": 0.15
+        supabase = get_supabase_client()
+
+        # Step 1: Find clients assigned to the program.
+        assigned_clients_response = supabase.table("client_program_assignments").select("client_id").eq("program_id", request.program_id).execute()
+
+        if not assigned_clients_response.data:
+            return {
+                "success": False,
+                "data": {"program_id": request.program_id, "metrics": {}, "comparisons": {}},
+                "meta": {"error": f"No clients found assigned to program ID {request.program_id} or error fetching assignments."}
             }
-        }
-        
-        # Filter metrics if requested
-        if request.metrics:
-            filtered_metrics = {}
-            for metric in request.metrics:
-                if metric in effectiveness["metrics"]:
-                    filtered_metrics[metric] = effectiveness["metrics"][metric]
-            effectiveness["metrics"] = filtered_metrics
-            
+
+        client_ids = [item['client_id'] for item in assigned_clients_response.data]
+        if not client_ids:
+             return {
+                "success": True, # Success, but no clients to analyze
+                "data": {
+                    "program_id": request.program_id,
+                    "number_of_clients_on_program": 0,
+                    "effectiveness_summary_phase1": "No clients are currently assigned to this program.",
+                    "metrics": {},
+                    "comparisons": {}
+                },
+                "meta": {}
+            }
+
+        # Step 2: For these clients, fetch their latest 'weight' progress record.
+        progress_data = []
+        for client_id in client_ids:
+            record_response = supabase.table("progress_records").select("client_id, date, value, type").eq("client_id", client_id).eq("type", "weight").order("date", desc=True).limit(1).maybe_single().execute()
+            if record_response.data:
+                progress_data.append(record_response.data)
+
+        # Step 3: Format the response.
+        program_id_resp = request.program_id
+        number_of_clients = len(client_ids)
+        sample_metric_details = { "metric_name": "Latest Weight Record", "records": progress_data }
+
         return {
             "success": True,
-            "data": effectiveness,
+            "data": {
+                "program_id": program_id_resp,
+                "number_of_clients_on_program": number_of_clients,
+                "effectiveness_summary_phase1": "Showing latest 'weight' records for enrolled clients as a sample. Full effectiveness metrics require more data and sophisticated analysis.",
+                "metrics": sample_metric_details,
+                "comparisons": {} # Empty for Phase 1
+            },
             "meta": {}
         }
+
+    except HTTPException as http_exc:
+        raise http_exc
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        # Log error here if possible
+        # print(f"An exception occurred: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"An error occurred while analyzing program effectiveness: {str(e)}")
 
 @router.post("/mcp/analytics/business-metrics2", tags=["mcp"])
 @cache_result(ttl_seconds=1800)  # Cache business metrics for 30 minutes
@@ -535,27 +622,29 @@ def mcpnew_get_agent_system_status():
         "What AI models are currently active in NGX?"
         "What are the current capabilities of the NGX AI system?"
     """
+    # TODO: Enhance in future: active_models and capabilities could be fetched
+    # dynamically from a configuration or a dedicated system status service.
     try:
-        status = {
+        status_data = {
             "status": "operational",
-            "active_models": ["Claude 3 Opus", "GPT-4o", "NGX-proprietary-models"],
-            "capabilities": [
+            "active_models": ["Claude 3 Opus", "GPT-4o", "NGX-proprietary-models"], # Mocked for now
+            "capabilities": [ # Mocked for now
                 "program_analysis", 
                 "natural_language_translation",
                 "adherence_prediction",
                 "personalized_recommendations",
                 "client_reporting"
             ],
-            "last_update": datetime.now().isoformat()
         }
+        status_data["last_update"] = datetime.now().isoformat() # Dynamically set
         
         return {
             "success": True,
-            "data": status,
+            "data": status_data,
             "meta": {}
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Error fetching agent system status: {str(e)}")
 
 @router.post("/mcp/agent/analysis", tags=["mcp"])
 def mcpnew_run_agent_analysis(request: AgentAnalysisRequest):
@@ -708,28 +797,71 @@ def mcpnew_translate_program_to_natural_language(request: TranslateProgramReques
         "Create a detailed explanation of Sarah's hypertrophy program"
         "Convert Michael's training plan to client-friendly language"
     """
+    # TODO: Consider allowing model choice (e.g., gpt-4) and more sophisticated prompt engineering.
+    # TODO: Implement more robust error handling for LLM content safety and rate limits.
     try:
-        # Example program translation based on complexity level
+        import databutton as db
+        import openai
+        import json
+
+        api_key = db.secrets.get("OPENAI_API_KEY")
+        if not api_key:
+            raise HTTPException(status_code=500, detail="OpenAI API key not found in Databutton secrets.")
+
+        # Ensure you have the correct client initialization for your openai library version
+        # For openai >= 1.0.0
+        client = openai.OpenAI(api_key=api_key)
+        # For older versions (e.g., 0.28.0), it might be:
+        # openai.api_key = api_key
+        # And calls would be openai.ChatCompletion.create(...)
+
+        program_data_str = json.dumps(request.program_data, indent=2)
         complexity = request.complexity_level or "standard"
-        program_name = request.program_data.get("name", "Training Program")
         
-        translation = ""
-        
+        complexity_instruction = ""
         if complexity == "simple":
-            translation = f"{program_name} is a training program that will help you build strength and muscle. It includes workouts 3-4 times per week with progressive overload to ensure continuous improvement."
+            complexity_instruction = "Explain it in simple, non-technical terms suitable for a beginner."
         elif complexity == "detailed":
-            translation = f"{program_name} is a periodized resistance training protocol designed to optimize hypertrophy and strength outcomes through strategic implementation of volume and intensity manipulation. The program incorporates compound and isolation movements with specific set and repetition schemes to maximize mechanical tension, metabolic stress, and muscle damage - the three primary mechanisms of muscle growth. Training frequency is distributed to allow for optimal recovery while maintaining sufficient training stimulus across all major muscle groups."
+            complexity_instruction = "Provide a detailed, professional explanation, including technical specifics if appropriate."
         else: # standard
-            translation = f"{program_name} is a structured training program focusing on progressive overload across major muscle groups. It balances workout volume and intensity to promote optimal muscle growth and strength development while allowing adequate recovery. The program includes both compound and isolation exercises to ensure comprehensive development."
-            
+            complexity_instruction = "Explain it in a standard, clear, and understandable way."
+
+        prompt_messages = [
+            {"role": "system", "content": "You are an expert fitness coach. Your task is to translate technical training program data into natural language explanations."},
+            {"role": "user", "content": f"Here is the training program data:\n\n{program_data_str}\n\nPlease translate this program into a natural language explanation. {complexity_instruction}"}
+        ]
+
+        try:
+            # For openai >= 1.0.0
+            chat_completion = client.chat.completions.create(
+                model="gpt-3.5-turbo", # Or another suitable model like "gpt-4"
+                messages=prompt_messages
+            )
+            translation = chat_completion.choices[0].message.content.strip()
+            # For older openai versions (e.g. 0.28.0):
+            # response = openai.ChatCompletion.create(
+            #     model="gpt-3.5-turbo",
+            #     messages=prompt_messages
+            # )
+            # translation = response.choices[0].message['content'].strip()
+
+        except Exception as e:
+            # Log the specific error from OpenAI if possible
+            # print(f"OpenAI API call failed: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Error calling OpenAI API: {str(e)}")
+
         return {
             "success": True,
             "data": {
-                "original_program": program_name,
+                "original_program": request.program_data.get("name", "Training Program"),
                 "translation": translation,
                 "complexity_level": complexity
             },
             "meta": {}
         }
+    except HTTPException as http_exc:
+        raise http_exc
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        # Log general error
+        # print(f"An unexpected error occurred: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred during program translation: {str(e)}")
