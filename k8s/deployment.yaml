@@ -1,0 +1,260 @@
+# NEXUS-CORE Main Application Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nexus-core-app
+  namespace: nexus-core
+  labels:
+    app: nexus-core
+    component: application
+    version: v2.0.0
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  
+  selector:
+    matchLabels:
+      app: nexus-core
+      component: application
+  
+  template:
+    metadata:
+      labels:
+        app: nexus-core
+        component: application
+        version: v2.0.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+    
+    spec:
+      # Security context
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      
+      # Service account
+      serviceAccountName: nexus-core-sa
+      
+      # Init containers for migrations and setup
+      initContainers:
+      - name: migrate-database
+        image: nexus-core:2.0.0
+        command: ["python", "-m", "alembic", "upgrade", "head"]
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: nexus-core-secrets
+              key: database-url
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+      
+      # Main containers
+      containers:
+      - name: nexus-core
+        image: nexus-core:2.0.0
+        imagePullPolicy: IfNotPresent
+        
+        # Ports
+        ports:
+        - name: http
+          containerPort: 80
+          protocol: TCP
+        - name: api
+          containerPort: 8000
+          protocol: TCP
+        
+        # Environment variables
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: ENVIRONMENT
+          value: "production"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: nexus-core-secrets
+              key: database-url
+        - name: SUPABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: nexus-core-secrets
+              key: supabase-url
+        - name: SUPABASE_SERVICE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: nexus-core-secrets
+              key: supabase-service-key
+        - name: REDIS_URL
+          value: "redis://nexus-core-redis:6379"
+        - name: LOG_LEVEL
+          value: "info"
+        - name: DB_POOL_SIZE
+          value: "20"
+        - name: CACHE_DEFAULT_TTL
+          value: "300"
+        - name: PERFORMANCE_MONITORING
+          value: "true"
+        
+        # Resource requirements
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+          limits:
+            cpu: 2
+            memory: 4Gi
+        
+        # Health checks
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        
+        # Startup probe for slow initialization
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 30
+        
+        # Volume mounts
+        volumeMounts:
+        - name: nexus-core-config
+          mountPath: /app/config
+          readOnly: true
+        - name: nexus-core-logs
+          mountPath: /app/logs
+        - name: nexus-core-data
+          mountPath: /app/data
+        
+        # Security context
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+      
+      # Volumes
+      volumes:
+      - name: nexus-core-config
+        configMap:
+          name: nexus-core-config
+      - name: nexus-core-logs
+        emptyDir: {}
+      - name: nexus-core-data
+        persistentVolumeClaim:
+          claimName: nexus-core-data-pvc
+      
+      # Node selection
+      nodeSelector:
+        kubernetes.io/os: linux
+      
+      # Tolerations and affinity
+      tolerations:
+      - key: "app"
+        operator: "Equal"
+        value: "nexus-core"
+        effect: "NoSchedule"
+      
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - nexus-core
+              topologyKey: kubernetes.io/hostname
+
+---
+# Horizontal Pod Autoscaler
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: nexus-core-hpa
+  namespace: nexus-core
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: nexus-core-app
+  
+  minReplicas: 3
+  maxReplicas: 10
+  
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 25
+        periodSeconds: 60
+
+---
+# Pod Disruption Budget
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: nexus-core-pdb
+  namespace: nexus-core
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: nexus-core
+      component: application

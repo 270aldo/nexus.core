@@ -1,0 +1,29 @@
+{
+  "mcpServers": {
+    "nexus-core": {
+      "command": "python",
+      "args": [
+        "-m", "uvicorn", 
+        "main:create_app", 
+        "--factory",
+        "--host", "0.0.0.0", 
+        "--port", "8000",
+        "--reload"
+      ],
+      "cwd": "/Users/aldoolivas/Desktop/NGX_Proyects/nexus_core/backend",
+      "env": {
+        "PYTHONPATH": "/Users/aldoolivas/Desktop/NGX_Proyects/nexus_core/backend",
+        "ENVIRONMENT": "development",
+        "SUPABASE_URL": "https://your-project.supabase.co",
+        "SUPABASE_SERVICE_KEY": "your_service_key_here",
+        "SUPABASE_ANON_KEY": "your_anon_key_here"
+      }
+    }
+  },
+  "globalShortcut": {
+    "openApp": "Cmd+Shift+Space"
+  },
+  "appearance": {
+    "theme": "dark"
+  }
+}

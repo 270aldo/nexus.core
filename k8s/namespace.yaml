@@ -1,0 +1,63 @@
+# Kubernetes Namespace for NEXUS-CORE
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: nexus-core
+  labels:
+    name: nexus-core
+    project: ngx-performance
+    environment: production
+    managed-by: kubernetes
+  annotations:
+    description: "NEXUS-CORE: Central nervous system for NGX Performance & Longevity operations"
+    contact: "dev@ngxperformance.com"
+    version: "2.0.0"
+
+---
+# Resource Quota for the namespace
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: nexus-core-quota
+  namespace: nexus-core
+spec:
+  hard:
+    # Compute resources
+    requests.cpu: "4"
+    requests.memory: 8Gi
+    limits.cpu: "8"
+    limits.memory: 16Gi
+    
+    # Storage
+    persistentvolumeclaims: "10"
+    requests.storage: 100Gi
+    
+    # Objects
+    pods: "20"
+    services: "10"
+    secrets: "20"
+    configmaps: "20"
+    
+    # Load balancers
+    services.loadbalancers: "2"
+
+---
+# Limit Range for default resource limits
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: nexus-core-limits
+  namespace: nexus-core
+spec:
+  limits:
+  - default:
+      cpu: "1"
+      memory: "2Gi"
+    defaultRequest:
+      cpu: "500m"
+      memory: "1Gi"
+    type: Container
+  
+  - default:
+      storage: "10Gi"
+    type: PersistentVolumeClaim

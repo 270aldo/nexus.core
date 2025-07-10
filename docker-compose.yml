@@ -1,0 +1,356 @@
+# NEXUS-CORE Production Docker Compose
+# Enterprise-grade infrastructure for NGX operations
+
+version: '3.8'
+
+services:
+  # ================================
+  # NEXUS-CORE Application
+  # ================================
+  nexus-core:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    image: nexus-core:2.0.0
+    container_name: nexus-core-app
+    restart: unless-stopped
+    
+    # Environment configuration
+    environment:
+      - NODE_ENV=production
+      - ENVIRONMENT=production
+      - DATABASE_URL=${DATABASE_URL}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
+      - FIREBASE_PRIVATE_KEY=${FIREBASE_PRIVATE_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      
+      # Performance settings
+      - DB_POOL_SIZE=20
+      - CACHE_DEFAULT_TTL=300
+      - PERFORMANCE_MONITORING=true
+      - SLOW_QUERY_THRESHOLD=1.0
+      
+      # Security settings
+      - CORS_ORIGINS=${CORS_ORIGINS:-*}
+      - TRUSTED_HOSTS=${TRUSTED_HOSTS:-localhost,*.ngxperformance.com}
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '1.0'
+          memory: 2G
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    # Ports
+    ports:
+      - "80:80"
+      - "8000:8000"
+    
+    # Volumes
+    volumes:
+      - nexus_logs:/app/logs
+      - nexus_data:/app/data
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro
+    
+    # Dependencies
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    
+    # Networks
+    networks:
+      - nexus-network
+      - monitoring
+
+  # ================================
+  # Redis Cache
+  # ================================
+  redis:
+    image: redis:7.2-alpine
+    container_name: nexus-redis
+    restart: unless-stopped
+    
+    # Configuration
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    
+    # Volumes
+    volumes:
+      - redis_data:/data
+    
+    # Networks
+    networks:
+      - nexus-network
+
+  # ================================
+  # PostgreSQL Database (Backup/Dev)
+  # ================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: nexus-postgres
+    restart: unless-stopped
+    
+    # Environment
+    environment:
+      POSTGRES_DB: nexus_core
+      POSTGRES_USER: nexus
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=en_US.UTF-8"
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 512M
+    
+    # Health check
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nexus -d nexus_core"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    
+    # Volumes
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    
+    # Ports (for development access)
+    ports:
+      - "5432:5432"
+    
+    # Networks
+    networks:
+      - nexus-network
+
+  # ================================
+  # Nginx Load Balancer
+  # ================================
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: nexus-nginx
+    restart: unless-stopped
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    
+    # Ports
+    ports:
+      - "443:443"
+      - "80:80"
+    
+    # Volumes
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/ssl:/etc/nginx/ssl:ro
+      - nexus_logs:/var/log/nginx
+    
+    # Dependencies
+    depends_on:
+      - nexus-core
+    
+    # Networks
+    networks:
+      - nexus-network
+      - public
+
+  # ================================
+  # Monitoring: Prometheus
+  # ================================
+  prometheus:
+    image: prom/prometheus:v2.47.0
+    container_name: nexus-prometheus
+    restart: unless-stopped
+    
+    # Command
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 512M
+    
+    # Volumes
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    
+    # Ports
+    ports:
+      - "9090:9090"
+    
+    # Networks
+    networks:
+      - monitoring
+
+  # ================================
+  # Monitoring: Grafana
+  # ================================
+  grafana:
+    image: grafana/grafana:10.1.0
+    container_name: nexus-grafana
+    restart: unless-stopped
+    
+    # Environment
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 256M
+    
+    # Volumes
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./docker/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    
+    # Ports
+    ports:
+      - "3000:3000"
+    
+    # Dependencies
+    depends_on:
+      - prometheus
+    
+    # Networks
+    networks:
+      - monitoring
+
+  # ================================
+  # Log Aggregation: Loki
+  # ================================
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: nexus-loki
+    restart: unless-stopped
+    
+    # Command
+    command: -config.file=/etc/loki/local-config.yaml
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 256M
+    
+    # Volumes
+    volumes:
+      - ./docker/loki/loki-config.yml:/etc/loki/local-config.yaml:ro
+      - loki_data:/loki
+    
+    # Ports
+    ports:
+      - "3100:3100"
+    
+    # Networks
+    networks:
+      - monitoring
+
+# ================================
+# Networks
+# ================================
+networks:
+  nexus-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+  
+  monitoring:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16
+  
+  public:
+    driver: bridge
+
+# ================================
+# Volumes
+# ================================
+volumes:
+  # Application data
+  nexus_logs:
+    driver: local
+  nexus_data:
+    driver: local
+  
+  # Database volumes
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  
+  # Monitoring volumes
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  loki_data:
+    driver: local

@@ -1,0 +1,219 @@
+# NEXUS-CORE Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nexus-core-config
+  namespace: nexus-core
+  labels:
+    app: nexus-core
+    component: config
+data:
+  # Application configuration
+  app-config.yaml: |
+    app:
+      name: "NEXUS-CORE"
+      version: "2.0.0"
+      environment: "production"
+      debug: false
+      
+    performance:
+      db_pool_size: 20
+      cache_default_ttl: 300
+      slow_query_threshold: 1.0
+      monitoring_enabled: true
+      
+    security:
+      cors_origins: ["https://nexus.ngxperformance.com", "https://api.ngxperformance.com"]
+      trusted_hosts: ["nexus.ngxperformance.com", "api.ngxperformance.com"]
+      rate_limit_per_minute: 100
+      
+    logging:
+      level: "info"
+      format: "json"
+      max_file_size: "10MB"
+      max_files: 5
+
+  # Nginx configuration snippet  
+  nginx-locations.conf: |
+    # Shared location blocks for nginx
+    location /health {
+        access_log off;
+        proxy_pass http://nexus-core-internal:8000/health;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        proxy_connect_timeout 5s;
+        proxy_send_timeout 10s;
+        proxy_read_timeout 10s;
+    }
+    
+    location /api/ {
+        proxy_pass http://nexus-core-internal:8000;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+    }
+
+  # Performance monitoring configuration
+  monitoring-config.yaml: |
+    metrics:
+      collection_interval: 30
+      retention_days: 7
+      slow_query_threshold: 1.0
+      
+    alerts:
+      enabled: true
+      thresholds:
+        response_time_ms: 2000
+        error_rate_percent: 5
+        cpu_percent: 80
+        memory_percent: 85
+        
+    endpoints:
+      health_check: "/health"
+      metrics: "/api/v1/performance/metrics"
+      benchmark: "/api/v1/performance/benchmark"
+
+  # Cache configuration
+  cache-config.yaml: |
+    redis:
+      host: "nexus-core-redis"
+      port: 6379
+      db: 0
+      max_connections: 20
+      
+    query_cache:
+      default_ttl: 300
+      max_entries: 10000
+      cleanup_interval: 3600
+      
+    ttl_strategy:
+      count_queries: 60
+      analytics_queries: 300
+      search_queries: 180
+      find_queries: 300
+
+---
+# Secrets configuration (template)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: nexus-core-secrets
+  namespace: nexus-core
+  labels:
+    app: nexus-core
+    component: secrets
+type: Opaque
+stringData:
+  # Database connections
+  database-url: "postgresql://user:password@host:5432/nexus_core"
+  supabase-url: "https://your-project.supabase.co"
+  supabase-service-key: "your-service-key"
+  supabase-anon-key: "your-anon-key"
+  
+  # Authentication
+  jwt-secret: "your-jwt-secret-key"
+  firebase-project-id: "your-firebase-project"
+  firebase-private-key: "your-firebase-private-key"
+  
+  # External services
+  redis-password: "your-redis-password"
+  
+  # Monitoring
+  datadog-api-key: "your-datadog-api-key"
+  grafana-admin-password: "your-grafana-password"
+  
+  # SSL/TLS
+  tls-cert: |
+    -----BEGIN CERTIFICATE-----
+    # Your SSL certificate
+    -----END CERTIFICATE-----
+  tls-key: |
+    -----BEGIN PRIVATE KEY-----
+    # Your SSL private key
+    -----END PRIVATE KEY-----
+
+---
+# Persistent Volume Claims
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nexus-core-data-pvc
+  namespace: nexus-core
+  labels:
+    app: nexus-core
+    component: storage
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+  storageClassName: fast-ssd
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nexus-core-redis-pvc
+  namespace: nexus-core
+  labels:
+    app: nexus-core
+    component: redis-storage
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: fast-ssd
+
+---
+# Service Account
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: nexus-core-sa
+  namespace: nexus-core
+  labels:
+    app: nexus-core
+    component: service-account
+
+---
+# Role for service account
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: nexus-core-role
+  namespace: nexus-core
+rules:
+- apiGroups: [""]
+  resources: ["configmaps", "secrets"]
+  verbs: ["get", "list"]
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list"]
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get", "list"]
+
+---
+# Role binding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: nexus-core-role-binding
+  namespace: nexus-core
+subjects:
+- kind: ServiceAccount
+  name: nexus-core-sa
+  namespace: nexus-core
+roleRef:
+  kind: Role
+  name: nexus-core-role
+  apiGroup: rbac.authorization.k8s.io
