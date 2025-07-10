@@ -1,80 +1,67 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
+    "target": "ES2022",
     "useDefineForClassFields": true,
     "lib": [
       "DOM",
       "DOM.Iterable",
-      "ESNext"
+      "ES2022"
     ],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "esModuleInterop": false,
+    "allowJs": false,
+    "skipLibCheck": false,
+    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "allowImportingTsExtensions": true,
+    
     "strict": false,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "noImplicitReturns": false,
+    "noFallthroughCasesInSwitch": false,
+    
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
-    "moduleResolution": "Node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
-    "isolatedModules": false,
+    "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
+    
     "baseUrl": ".",
     "paths": {
-      "brain": [
-        "./src/brain"
-      ],
-      "types": [
-        "./src/brain/data-contracts.ts"
-      ],
-      "components/*": [
-        "./src/components/*"
-      ],
-      "pages/*": [
-        "./src/pages/*"
-      ],
-      "app": [
-        "./src/app"
-      ],
-      "app/auth": [
-        "./src/app/auth"
-      ],
-      "utils/*": [
-        "./src/utils/*"
-      ],
-      "@/*": [
-        "./src/*"
-      ],
-      "@/hooks/*": [
-        "./src/extensions/shadcn/hooks/*"
-      ],
-      "@/components/hooks/*": [
-        "./src/extensions/shadcn/hooks/*"
-      ],
-      "@/components/ui/*": [
-        "./src/extensions/shadcn/components/*"
-      ],
-    }
+      "@/*": ["./src/*"],
+      "@/components/*": ["./src/components/*"],
+      "@/components/ui/*": ["./src/extensions/shadcn/components/*"],
+      "@/hooks/*": ["./src/extensions/shadcn/hooks/*"],
+      "@/lib/*": ["./src/lib/*"],
+      "@/utils/*": ["./src/utils/*"],
+      "@/pages/*": ["./src/pages/*"],
+      "@/types/*": ["./src/types/*"],
+      "@/constants/*": ["./src/constants/*"]
+    },
+    
+    "incremental": true,
+    "tsBuildInfoFile": ".tsbuildinfo",
+    "moduleDetection": "force"
   },
   "include": [
-    "env.d.ts",
-    "src"
+    "src/**/*"
   ],
   "exclude": [
-    "src/brain/Brain.ts",
-    "src/brain/BrainRoute.ts",
-    "src/brain/data-contracts.ts",
-    "src/brain/http-client.ts"
+    "node_modules",
+    "dist",
+    "build",
+    ".vite",
+    "coverage"
   ],
   "references": [
     {
       "path": "./tsconfig.node.json"
     }
-  ],
-  "ts-node": {
-    "compilerOptions": {
-      "module": "CommonJS"
-    }
-  }
+  ]
 }

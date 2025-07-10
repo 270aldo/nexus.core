@@ -1,1 +1,64 @@
-{"routers":{"mcp_progress_clean":{"name":"mcp_progress_clean","version":"2025-04-25T23:32:48.109000Z","disableAuth":false},"logs":{"name":"logs","version":"2025-04-24T20:26:54","disableAuth":false},"mcp_communication":{"name":"mcp_communication","version":"2025-04-24T01:23:48","disableAuth":false},"mcp_activation":{"name":"mcp_activation","version":"2025-04-24T05:17:46","disableAuth":false},"mcp_activator2":{"name":"mcp_activator2","version":"2025-04-24T00:39:45","disableAuth":false},"mcp_emergency":{"name":"mcp_emergency","version":"2025-04-24T00:50:22","disableAuth":false},"config":{"name":"config","version":"2025-04-22T01:10:58","disableAuth":false},"activity_logs":{"name":"activity_logs","version":"2025-04-25T23:40:33.660000Z","disableAuth":false},"mcpnew":{"name":"mcpnew","version":"2025-04-25T23:33:50.390000Z","disableAuth":false},"analytics_mcp":{"name":"analytics_mcp","version":"2025-04-23T07:33:09","disableAuth":false},"mcp_training":{"name":"mcp_training","version":"2025-04-24T20:19:28","disableAuth":false},"mcp_tools":{"name":"mcp_tools","version":"2025-04-24T02:15:12","disableAuth":false},"agent":{"name":"agent","version":"2025-04-23T07:00:10","disableAuth":false},"mcp_analysis":{"name":"mcp_analysis","version":"2025-04-24T01:25:23","disableAuth":false},"business":{"name":"business","version":"2025-04-22T07:54:16","disableAuth":false},"mcp_operations":{"name":"mcp_operations","version":"2025-04-25T23:49:03.638000Z","disableAuth":false},"clients":{"name":"clients","version":"2025-04-25T23:49:03.821000Z","disableAuth":false},"mcp_system":{"name":"mcp_system","version":"2025-04-25T23:53:55.057000Z","disableAuth":false},"mcp_nutrition":{"name":"mcp_nutrition","version":"2025-04-24T20:20:46","disableAuth":false},"mcputils":{"name":"mcputils","version":"2025-04-24T05:16:15","disableAuth":false},"training":{"name":"training","version":"2025-04-24T15:13:26","disableAuth":false},"shared":{"name":"shared","version":"2025-04-24T15:10:53","disableAuth":false},"mcp_master":{"name":"mcp_master","version":"2025-04-23T07:33:06","disableAuth":false},"communication":{"name":"communication","version":"2025-04-22T02:10:22","disableAuth":false},"client_service":{"name":"client_service","version":"2025-04-24T00:06:03","disableAuth":false},"supabase_client":{"name":"supabase_client","version":"2025-04-24T20:37:29","disableAuth":false},"agent_mcp":{"name":"agent_mcp","version":"2025-04-24T01:34:54","disableAuth":false},"exercises_library":{"name":"exercises_library","version":"2025-04-24T21:20:56","disableAuth":false},"analytics":{"name":"analytics","version":"2025-04-22T02:12:19","disableAuth":false},"notifications":{"name":"notifications","version":"2025-04-23T22:10:13","disableAuth":false},"nutrition":{"name":"nutrition","version":"2025-04-24T18:42:25","disableAuth":false},"main_mcp":{"name":"main_mcp","version":"2025-04-23T07:33:09","disableAuth":false},"mcp":{"name":"mcp","version":"2025-04-23T07:33:06","disableAuth":false},"mcp_direct2":{"name":"mcp_direct2","version":"2025-04-25T23:33:50.140000Z","disableAuth":false},"mcp_clean":{"name":"mcp_clean","version":"2025-04-23T07:33:06","disableAuth":false},"cache_utils":{"name":"cache_utils","version":"2025-04-24T20:19:13","disableAuth":false},"claude_mcp":{"name":"claude_mcp","version":"2025-04-24T00:30:04","disableAuth":false},"progress_v2":{"name":"progress_v2","version":"2025-04-25T23:29:14.771000Z","disableAuth":false},"mcprouter":{"name":"mcprouter","version":"2025-04-23T07:33:36","disableAuth":false},"utils":{"name":"utils","version":"2025-04-24T00:27:46","disableAuth":false},"progress":{"name":"progress","version":"2025-04-24T15:12:57","disableAuth":false},"claude_direct":{"name":"claude_direct","version":"2025-04-25T23:49:03.776000Z","disableAuth":false},"mcp_progress":{"name":"mcp_progress","version":"2025-04-25T23:31:29.119000Z","disableAuth":false},"database":{"name":"database","version":"2025-04-22T07:42:18","disableAuth":false},"mcp_progress2":{"name":"mcp_progress2","version":"2025-04-25T23:31:29.161000Z","disableAuth":false},"coach_assistant":{"name":"coach_assistant","version":"2025-04-23T07:39:10","disableAuth":false}}}
+{
+  "routers": {
+    "client_management": {
+      "name": "client_management",
+      "version": "2025-07-10T13:57:05.562331",
+      "disableAuth": false,
+      "description": "Unified client operations and management"
+    },
+    "mcp_unified": {
+      "name": "mcp_unified",
+      "version": "2025-07-10T13:57:05.562334",
+      "disableAuth": true,
+      "description": "Single MCP interface for Claude Desktop integration"
+    },
+    "programs": {
+      "name": "programs",
+      "version": "2025-07-10T13:57:05.562335",
+      "disableAuth": false,
+      "description": "Training programs and exercise management"
+    },
+    "nutrition": {
+      "name": "nutrition",
+      "version": "2025-07-10T13:57:05.562336",
+      "disableAuth": false,
+      "description": "Nutrition planning and tracking"
+    },
+    "analytics": {
+      "name": "analytics",
+      "version": "2025-07-10T13:57:05.562337",
+      "disableAuth": false,
+      "description": "Business intelligence and analytics"
+    },
+    "progress": {
+      "name": "progress",
+      "version": "2025-07-10T13:57:05.562338",
+      "disableAuth": false,
+      "description": "Progress tracking and measurements"
+    },
+    "communications": {
+      "name": "communications",
+      "version": "2025-07-10T13:57:05.562339",
+      "disableAuth": false,
+      "description": "Notifications and client communications"
+    },
+    "operations": {
+      "name": "operations",
+      "version": "2025-07-10T13:57:05.562340",
+      "disableAuth": false,
+      "description": "System operations and monitoring"
+    },
+    "agent": {
+      "name": "agent",
+      "version": "2025-07-10T13:57:05.562341",
+      "disableAuth": false,
+      "description": "AI agent services and analysis"
+    },
+    "core": {
+      "name": "core",
+      "version": "2025-07-10T13:57:05.562341",
+      "disableAuth": false,
+      "description": "Core infrastructure and shared utilities"
+    }
+  }
+}

@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import brain from "brain";
+
 
 interface TrainingProgram {
   id: string;

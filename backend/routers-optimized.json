@@ -1,0 +1,185 @@
+{
+  "routers": {
+    "client_management": {
+      "name": "client_management",
+      "version": "2025-06-27T14:20:26.000000Z",
+      "disableAuth": false,
+      "description": "Unified client operations and management",
+      "endpoints": [
+        "/clients/search",
+        "/clients/get",
+        "/clients/add",
+        "/clients/update",
+        "/clients/delete",
+        "/clients/status"
+      ]
+    },
+    "mcp_unified": {
+      "name": "mcp_unified",
+      "version": "2025-06-27T14:20:26.000000Z",
+      "disableAuth": false,
+      "description": "Single MCP interface for Claude Desktop integration",
+      "priority": "critical",
+      "endpoints": [
+        "/mcp/clients/search",
+        "/mcp/clients/get",
+        "/mcp/clients/add",
+        "/mcp/analytics/adherence",
+        "/mcp/analytics/effectiveness",
+        "/mcp/analytics/business-metrics",
+        "/mcp/agent/analysis",
+        "/mcp/agent/report",
+        "/mcp/programs/generate"
+      ]
+    },
+    "programs": {
+      "name": "programs",
+      "version": "2025-06-27T14:20:26.000000Z",
+      "disableAuth": false,
+      "description": "Training programs and exercise management",
+      "endpoints": [
+        "/programs/templates",
+        "/programs/create",
+        "/programs/assign",
+        "/exercises/library",
+        "/exercises/search"
+      ]
+    },
+    "nutrition": {
+      "name": "nutrition",
+      "version": "2025-06-27T14:20:26.000000Z",
+      "disableAuth": false,
+      "description": "Nutrition planning and tracking",
+      "endpoints": [
+        "/nutrition/plans",
+        "/nutrition/meals",
+        "/nutrition/macros",
+        "/nutrition/calculate"
+      ]
+    },
+    "analytics": {
+      "name": "analytics",
+      "version": "2025-06-27T14:20:26.000000Z",
+      "disableAuth": false,
+      "description": "Business intelligence and analytics",
+      "endpoints": [
+        "/analytics/adherence",
+        "/analytics/effectiveness",
+        "/analytics/business-metrics",
+        "/analytics/dashboard",
+        "/analytics/reports"
+      ]
+    },
+    "progress": {
+      "name": "progress",
+      "version": "2025-06-27T14:20:26.000000Z",
+      "disableAuth": false,
+      "description": "Progress tracking and measurements",
+      "endpoints": [
+        "/progress/record",
+        "/progress/history",
+        "/progress/measurements",
+        "/progress/goals"
+      ]
+    },
+    "communications": {
+      "name": "communications",
+      "version": "2025-06-27T14:20:26.000000Z",
+      "disableAuth": false,
+      "description": "Notifications and client communications",
+      "endpoints": [
+        "/notifications/send",
+        "/notifications/templates",
+        "/communications/messages",
+        "/alerts/configure"
+      ]
+    },
+    "operations": {
+      "name": "operations",
+      "version": "2025-06-27T14:20:26.000000Z",
+      "disableAuth": false,
+      "description": "System operations and monitoring",
+      "endpoints": [
+        "/operations/health",
+        "/operations/metrics",
+        "/operations/logs",
+        "/operations/activate"
+      ]
+    },
+    "agent": {
+      "name": "agent",
+      "version": "2025-06-27T14:20:26.000000Z",
+      "disableAuth": false,
+      "description": "AI agent services and analysis",
+      "endpoints": [
+        "/agent/analyze",
+        "/agent/recommend",
+        "/agent/emergency",
+        "/agent/insights"
+      ]
+    },
+    "core": {
+      "name": "core",
+      "version": "2025-06-27T14:20:26.000000Z",
+      "disableAuth": true,
+      "description": "Core infrastructure and shared utilities",
+      "endpoints": [
+        "/core/health",
+        "/core/config",
+        "/core/cache",
+        "/core/database"
+      ]
+    }
+  },
+  "metadata": {
+    "consolidation_date": "2025-06-27T14:20:26.000000Z",
+    "previous_modules_count": 49,
+    "current_modules_count": 10,
+    "reduction_percentage": 79.6,
+    "deprecated_modules": [
+      "mcp",
+      "mcp_master", 
+      "mcp_clean",
+      "main_mcp",
+      "mcpnew",
+      "mcprouter",
+      "mcputils",
+      "mcp_direct2",
+      "claude_mcp",
+      "claude_direct",
+      "analytics_mcp",
+      "business",
+      "executive_dashboard",
+      "progress_v2",
+      "mcp_progress",
+      "mcp_progress2",
+      "mcp_progress_clean",
+      "notifications",
+      "communication",
+      "mcp_communication",
+      "proactive_alerts",
+      "mcp_operations",
+      "mcp_system",
+      "mcp_activation",
+      "mcp_activator2",
+      "logs",
+      "activity_logs",
+      "agent_mcp",
+      "coach_assistant",
+      "mcp_analysis",
+      "mcp_emergency",
+      "config",
+      "database",
+      "supabase_client",
+      "utils",
+      "shared",
+      "cache_utils",
+      "training",
+      "exercises_library",
+      "mcp_training",
+      "mcp_nutrition",
+      "clients",
+      "client_service"
+    ]
+  }
+}

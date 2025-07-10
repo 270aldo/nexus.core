@@ -32,7 +32,7 @@ import {
 import * as ds from "utils/design-system";
 import { toast } from "sonner";
 import { Edit, Plus, Trash, Copy, ExternalLink } from "lucide-react";
-import brain from "brain";
+
 
 interface MessageTemplate {
   id: string;

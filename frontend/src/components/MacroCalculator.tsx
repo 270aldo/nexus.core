@@ -10,7 +10,7 @@ import { Slider } from "@/components/ui/slider";
 import { Separator } from "@/components/ui/separator";
 import { Search, Plus, Minus, Info, ChevronDown, ChevronUp, X, Check, BookOpen, Heart, BarChart2, FileDown, Printer } from 'lucide-react';
 import { toast } from "sonner";
-import brain from "brain";
+
 import * as ds from "utils/design-system";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts";

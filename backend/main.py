@@ -63,15 +63,7 @@ def import_api_routers() -> APIRouter:
     return routes
 
 
-def get_firebase_config() -> dict | None:
-    extensions = os.environ.get("DATABUTTON_EXTENSIONS", "[]")
-    extensions = json.loads(extensions)
-
-    for ext in extensions:
-        if ext["name"] == "firebase-auth":
-            return ext["config"]["firebaseConfig"]
-
-    return None
+# Firebase configuration removed - using Supabase authentication only
 
 
 def create_app() -> FastAPI:
@@ -84,20 +76,9 @@ def create_app() -> FastAPI:
             for method in route.methods:
                 print(f"{method} {route.path}")
 
-    firebase_config = get_firebase_config()
-
-    if firebase_config is None:
-        print("No firebase config found")
-        app.state.auth_config = None
-    else:
-        print("Firebase config found")
-        auth_config = {
-            "jwks_url": "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com",
-            "audience": firebase_config["projectId"],
-            "header": "authorization",
-        }
-
-        app.state.auth_config = AuthConfig(**auth_config)
+    # Using Supabase authentication - Firebase config removed
+    print("Using Supabase authentication")
+    app.state.auth_config = None
 
     return app
 

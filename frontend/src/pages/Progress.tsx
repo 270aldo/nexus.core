@@ -18,9 +18,9 @@ import { ProgressHistory } from "components/ProgressHistory";
 import { RecentEntries } from "components/RecentEntries";
 import { ExportOptions } from "../components/ExportOptions";
 import { theme } from "utils/theme";
-import brain from "brain";
+
 import { RecordType } from "types";
-import type { ProgressSummaryResponse, ProgressRecord } from "brain";
+
 
 export default function Progress() {
   const navigate = useNavigate();

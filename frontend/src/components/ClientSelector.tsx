@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Client } from "utils/types";
-import brain from "brain";
+
 import { Loader2 } from "lucide-react";
 
 export interface Props {

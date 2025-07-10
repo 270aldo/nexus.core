@@ -21,7 +21,7 @@ import { WorkoutForm } from "../components/WorkoutForm";
 import { FeedbackForm } from "../components/FeedbackForm";
 import { ClientNotes } from "../components/ClientNotes";
 import { RecordType } from "types";
-import brain from "brain";
+
 import { toast } from "sonner";
 import { format, subMonths } from "date-fns";
 import { GenerateReportDialog } from "../components/GenerateReportDialog";

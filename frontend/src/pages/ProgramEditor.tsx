@@ -3,7 +3,7 @@ import { Layout } from "../components/Layout";
 import { Header } from "../components/Header";
 import ProgramBuilder from "../components/ProgramBuilder";
 import { toast } from "sonner";
-import brain from "brain";
+
 
 export default function ProgramEditor() {
   // This would normally be loaded from the API, but using placeholder for now

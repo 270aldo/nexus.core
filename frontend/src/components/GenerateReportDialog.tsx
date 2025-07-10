@@ -15,7 +15,7 @@ import { PDFViewer } from "@react-pdf/renderer";
 import { ClientReportPDF } from "./PDFExport";
 import { format, subMonths } from "date-fns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import brain from "brain";
+
 import { useAuth } from "utils/auth-context";
 import { PDFDownloadButton } from "./PDFExport";
 import { ExportOptions } from "./ExportOptions";

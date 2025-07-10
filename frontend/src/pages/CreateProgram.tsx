@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { VisualProgramEditor } from "components/VisualProgramEditor";
 import { toast } from "sonner";
-import brain from "brain";
+
 import { ArrowLeft, Save, Loader2 } from "lucide-react";
 
 const CreateProgram = () => {

@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { Bell, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import brain from "brain";
-import { NotificationsResponse, Notification } from "brain";
+
+
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { format, formatDistance } from "date-fns";

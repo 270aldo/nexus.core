@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CheckCircle, XCircle, AlertCircle, InfoIcon, ServerIcon, ClockIcon, HistoryIcon, WrenchIcon } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import brain from "brain";
+
 import { MCPActivator } from "./MCPActivator";
 
 export interface MCPStatusProps {

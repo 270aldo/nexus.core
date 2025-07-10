@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import brain from "brain";
+
 import * as ds from "utils/design-system";
 import { ProtectedRoute } from "components/ProtectedRoute";
 import { ProgramEditor, ProgramStructure } from "components/ProgramEditor";

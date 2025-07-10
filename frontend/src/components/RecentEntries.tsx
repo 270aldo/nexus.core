@@ -1,7 +1,7 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import type { RecordType, ProgressRecord } from "brain";
+
 import { LineChart, MessageSquare, Dumbbell, CalendarDays } from "lucide-react";
 import { format, parseISO, isValid } from "date-fns";
 import { theme } from "utils/theme";

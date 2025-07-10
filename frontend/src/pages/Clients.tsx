@@ -44,7 +44,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import brain from "brain";
+
 
 const ClientsPage = () => {
   const navigate = useNavigate();

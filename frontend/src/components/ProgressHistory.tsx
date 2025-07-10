@@ -5,8 +5,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AreaChart, BarChart, LineChart as RechartsLineChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Area, Line, Legend, Bar } from "recharts";
 import { LineChart, BarChartIcon, Activity, AlertCircle, Loader2 } from "lucide-react";
 import { format, parseISO, isValid, subMonths } from "date-fns";
-import brain from "brain";
-import type { RecordType } from "brain";
+
+
 import { theme } from "utils/theme";
 
 interface Props {

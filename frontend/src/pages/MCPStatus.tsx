@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ArrowRightIcon, CheckCircleIcon, Code2Icon, GlobeIcon, InfoIcon, XIcon, UsersIcon } from "lucide-react";
-import brain from "brain";
+
 import { toast } from "sonner";
 import { Layout } from "components/Layout";
 import { MCPStatus as MCPStatusComponent } from "components/MCPStatus";

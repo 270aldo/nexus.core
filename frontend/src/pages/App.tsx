@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProtectedRoute } from "components/ProtectedRoute";
 import { useNavigate } from "react-router-dom";
-import brain from "brain";
+
 import { toast } from "sonner";
 import * as ds from "utils/design-system";
 import { BaseCard } from "components/BaseCard";

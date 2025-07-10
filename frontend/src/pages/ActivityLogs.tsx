@@ -28,7 +28,7 @@ import {
 import { Pagination } from "../components/Pagination";
 import { DateRangePicker } from "../components/DateRangePicker";
 import * as ds from "utils/design-system";
-import brain from "brain";
+
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";

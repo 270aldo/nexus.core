@@ -21,7 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import brain from "brain";
+
 import { X, Plus, Save } from "lucide-react";
 import { ProgramEditor, ProgramStructure } from "components/ProgramEditor";
 import { ProgramExportButtons } from "components/ProgramExportButtons";

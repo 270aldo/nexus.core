@@ -19,7 +19,7 @@ import {
   TableRow 
 } from "@/components/ui/table";
 
-import brain from "brain";
+
 
 interface Food {
   name: string;

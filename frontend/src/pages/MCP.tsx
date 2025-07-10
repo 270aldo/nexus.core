@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import brain from "brain";
+
 import { BaseCard } from "components/BaseCard";
 import { CardTitle as DesignCardTitle } from "components/CardTitle";
 import * as ds from "utils/design-system";

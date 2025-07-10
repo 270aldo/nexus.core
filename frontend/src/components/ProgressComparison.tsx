@@ -6,7 +6,7 @@ import { DatePicker } from "./DatePicker";
 import { format, sub, isAfter, differenceInDays, differenceInMonths } from 'date-fns';
 import { RecordType } from 'types';
 import { toast } from "sonner";
-import brain from "brain";
+
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList } from 'recharts';
 import { ArrowUp, ArrowDown, Minus, RefreshCw, AlertCircle } from 'lucide-react';
 import * as ds from "utils/design-system";

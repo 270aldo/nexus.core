@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { format, formatDistance } from "date-fns";
 import { es } from "date-fns/locale";
-import brain from "brain";
-import { Notification, NotificationsResponse } from "brain";
+
+
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";

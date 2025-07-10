@@ -6,8 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast, Toaster } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import brain from "brain";
-import { NotificationCreate } from "brain";
+
+
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -482,7 +482,7 @@ export default function NotificationsDemo() {
                   <h3 className="text-lg font-medium mb-2">Código para generar notificaciones</h3>
                   <pre className="bg-slate-900 text-slate-50 p-4 rounded-md overflow-x-auto text-sm">
 {`// Ejemplo en componente React
-import brain from "brain";
+
 
 const createNotification = async () => {
   try {

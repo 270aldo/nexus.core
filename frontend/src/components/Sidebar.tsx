@@ -3,8 +3,8 @@ import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { useAuth } from "utils/auth-context";
-import { cn } from "utils/cn";
+import { useAuth } from "../utils/auth-context";
+import { cn } from "../utils/cn";
 import { 
   CalendarDays, LineChart, Users, Dumbbell, 
   ScrollText, Bot, MessageSquare, BarChart,
