@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ProgressComparison, ProgressMetric } from 'components/ProgressComparison';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import brain from 'brain';
+import brain from '@/brain/Brain';
 import { toast } from 'sonner';
 
 const mockMetrics: ProgressMetric[] = [

@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { FeedbackRequest, FeedbackData } from "brain/data-contracts";
+import { FeedbackRequest, FeedbackData } from "@/brain/data-contracts";
 
 import { toast } from "sonner";
 import { CalendarIcon } from "lucide-react";

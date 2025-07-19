@@ -2,61 +2,61 @@
   "routers": {
     "client_management": {
       "name": "client_management",
-      "version": "2025-07-10T13:57:05.562331",
+      "version": "2025-07-19T00:00:00.000000",
       "disableAuth": false,
       "description": "Unified client operations and management"
     },
-    "mcp_unified": {
-      "name": "mcp_unified",
-      "version": "2025-07-10T13:57:05.562334",
+    "mcpnew": {
+      "name": "mcpnew",
+      "version": "2025-07-19T00:00:00.000000",
       "disableAuth": true,
-      "description": "Single MCP interface for Claude Desktop integration"
+      "description": "Main MCP interface for Claude Desktop integration (consolidated)"
     },
     "programs": {
       "name": "programs",
-      "version": "2025-07-10T13:57:05.562335",
+      "version": "2025-07-19T00:00:00.000000",
       "disableAuth": false,
       "description": "Training programs and exercise management"
     },
     "nutrition": {
       "name": "nutrition",
-      "version": "2025-07-10T13:57:05.562336",
+      "version": "2025-07-19T00:00:00.000000",
       "disableAuth": false,
       "description": "Nutrition planning and tracking"
     },
     "analytics": {
       "name": "analytics",
-      "version": "2025-07-10T13:57:05.562337",
+      "version": "2025-07-19T00:00:00.000000",
       "disableAuth": false,
       "description": "Business intelligence and analytics"
     },
     "progress": {
       "name": "progress",
-      "version": "2025-07-10T13:57:05.562338",
+      "version": "2025-07-19T00:00:00.000000",
       "disableAuth": false,
       "description": "Progress tracking and measurements"
     },
     "communications": {
       "name": "communications",
-      "version": "2025-07-10T13:57:05.562339",
+      "version": "2025-07-19T00:00:00.000000",
       "disableAuth": false,
       "description": "Notifications and client communications"
     },
     "operations": {
       "name": "operations",
-      "version": "2025-07-10T13:57:05.562340",
+      "version": "2025-07-19T00:00:00.000000",
       "disableAuth": false,
       "description": "System operations and monitoring"
     },
     "agent": {
       "name": "agent",
-      "version": "2025-07-10T13:57:05.562341",
+      "version": "2025-07-19T00:00:00.000000",
       "disableAuth": false,
       "description": "AI agent services and analysis"
     },
     "core": {
       "name": "core",
-      "version": "2025-07-10T13:57:05.562341",
+      "version": "2025-07-19T00:00:00.000000",
       "disableAuth": false,
       "description": "Core infrastructure and shared utilities"
     }

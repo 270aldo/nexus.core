@@ -25,7 +25,7 @@ export {
 } from "../constants";
 export * from "./auth";
 
-import brain from "../brain";
+import brain from "../brain/Brain";
 export const backend = brain;
 
 // export * as types from "../brain/data-contracts";

@@ -4,9 +4,9 @@
   "version": "2.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --config vite.config.optimized.ts",
-    "build": "tsc -b && vite build --config vite.config.optimized.ts",
-    "preview": "vite preview --config vite.config.optimized.ts",
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "analyze": "npm run build && npx vite-bundle-analyzer dist",
     "size-check": "npm run build && bundlesize",

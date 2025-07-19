@@ -11,7 +11,7 @@ import { BackButton } from "components/BackButton";
 import { useSupabase } from 'utils/supabase';
 import { DatabaseStatus } from 'components/DatabaseStatus';
 import { Textarea } from '@/components/ui/textarea';
-import brain from 'brain';
+import brain from '@/brain/Brain';
 import { toast } from 'sonner';
 
 export default function DatabaseSetup() {

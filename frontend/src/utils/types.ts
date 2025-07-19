@@ -8,4 +8,4 @@ export type {
   ProgressSummaryResponse, 
   MetricSummary, 
   DateRange
-} from "../brain/data-contracts";
+} from "@/brain/data-contracts";

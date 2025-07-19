@@ -11,7 +11,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
-import { BodyMeasurements, MeasurementRequest } from "brain/data-contracts";
+import { BodyMeasurements, MeasurementRequest } from "@/brain/data-contracts";
 
 export interface Props {
   clientId: string;

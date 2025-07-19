@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import brain from 'brain';
+import brain from '@/brain/Brain';
 import { Client, ClientCreateRequest, ClientUpdateRequest, ClientSearchResponse } from './client-types';
 import { toast } from 'sonner';
 
